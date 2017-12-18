@@ -1,0 +1,65 @@
+version: '2'
+
+services:
+
+  drupal8:
+    build: ./
+    image: drupal8-levquiz:latest
+    environment:
+      INSTALL: "TRUE"
+    depends_on:
+      - mysql
+      - mailhog
+    links:
+      - mysql:mysql
+      - mailhog:mailhog
+    volumes:
+      - ./src:/var/www/html:cached
+      - ./etc:/mnt/etc:cached
+    labels:
+      - 'traefik.backend=d8.levquiz'
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host:d8.levquiz.127.0.0.1.xip.io'
+
+  mysql:
+    image: mysql:5.6
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+    volumes:
+      - levquiz-mysql-5.6-data:/var/lib/mysql
+      - ./etc/mysql:/etc/mysql/conf.d:cached
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      PHP_UPLOAD_MAX_FILESIZE: 1G
+      PHP_MAX_INPUT_VARS: 1G
+    depends_on:
+      - mysql
+    links:
+      - mysql:db
+    labels:
+      - 'traefik.backend=pma.w101'
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host:pma.levquiz.127.0.0.1.xip.io'
+
+  mailhog:
+    image: mailhog/mailhog
+    labels:
+      - 'traefik.backend=mh.w101'
+      - 'traefik.port=8025'
+      - 'traefik.frontend.rule=Host:mh.levquiz.127.0.0.1.xip.io'
+
+  traefik:
+    image: traefik
+    command: -c /dev/null --web --docker --logLevel=INFO
+    ports:
+      - '3000:80'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  levquiz-mysql-5.6-data:

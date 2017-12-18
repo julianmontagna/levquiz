@@ -1,0 +1,5 @@
+name: Lev Quiz App
+description: Quiz app for students
+package: Lev
+type: module
+core: '8.x'

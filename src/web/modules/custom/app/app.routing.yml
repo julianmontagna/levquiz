@@ -1,0 +1,7 @@
+app.dashboard:
+  path: '/app'
+  defaults:
+    _controller: '\Drupal\app\Controller\AppController::dashboard'
+    _title: 'Quiz Dashboard'
+  requirements:
+    _permission: 'access content'
